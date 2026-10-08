@@ -1,0 +1,22 @@
+name: lavka_update
+description: In-app update check and version display for SoftImply's Android apps, distributed through Lavka.
+version: 0.1.0
+publish_to: none
+repository: https://github.com/SoftImply-OU/lavka_update
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Ranges, not pins: every app already depends on some of these.
+  package_info_plus: ">=8.0.0 <10.0.0"
+  shared_preferences: ">=2.2.0 <3.0.0"
+  url_launcher: ">=6.2.0 <7.0.0"
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ">=4.0.0 <7.0.0"

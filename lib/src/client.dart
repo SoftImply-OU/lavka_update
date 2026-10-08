@@ -57,6 +57,15 @@ class LavkaUpdate {
   static Duration _minInterval = const Duration(hours: 1);
   static DateTime? _lastCheck;
   static Future<LavkaUpdateStatus?>? _inFlight;
+  static bool _identityChanged = false;
+
+  /// Test hooks: pretend to be Android, and replace the HTTP call.
+  @visibleForTesting
+  static bool? debugIsAndroid;
+  @visibleForTesting
+  static Future<Map<String, dynamic>> Function(String url, Map<String, Object?> body)? debugPost;
+
+  static bool get _isAndroid => debugIsAndroid ?? (!kIsWeb && Platform.isAndroid);
 
   /// The latest known status; widgets rebuild from it. Null until the app's
   /// own version has been read.
@@ -75,13 +84,20 @@ class LavkaUpdate {
   }
 
   /// Who's using the app, so Lavka can show who runs which build. Call after
-  /// sign-in, and with null after sign-out. Reports again on the next check.
+  /// sign-in, and with null after sign-out. Reports the new identity right
+  /// away, bypassing the throttle.
   static void setUser(String? email) {
     final next = (email == null || email.trim().isEmpty) ? null : email.trim();
     if (next == _email) return;
     _email = next;
-    _lastCheck = null; // let the next check report the new identity
-    unawaited(check());
+    if (_inFlight != null) {
+      // A check started before sign-in finished (the usual cold start) and
+      // may already have sent its body without the email. Report again as
+      // soon as it completes instead of folding into it.
+      _identityChanged = true;
+    } else {
+      unawaited(check(force: true));
+    }
   }
 
   /// Asks Lavka whether a newer build exists. Throttled to [minInterval]
@@ -89,7 +105,13 @@ class LavkaUpdate {
   /// status). Only Android builds are distributed through Lavka, so on other
   /// platforms this only reads the local version.
   static Future<LavkaUpdateStatus?> check({bool force = false}) {
-    return _inFlight ??= _check(force).whenComplete(() => _inFlight = null);
+    return _inFlight ??= _check(force).whenComplete(() {
+      _inFlight = null;
+      if (_identityChanged) {
+        _identityChanged = false;
+        unawaited(check(force: true));
+      }
+    });
   }
 
   static Future<LavkaUpdateStatus?> _check(bool force) async {
@@ -102,7 +124,7 @@ class LavkaUpdate {
       }
 
       final appId = _appId;
-      if (appId == null || kIsWeb || !Platform.isAndroid) return status.value;
+      if (appId == null || !_isAndroid) return status.value;
       final now = DateTime.now();
       if (!force && _lastCheck != null && now.difference(_lastCheck!) < _minInterval) {
         return status.value;
@@ -138,6 +160,8 @@ class LavkaUpdate {
   }
 
   static Future<Map<String, dynamic>> _post(String url, Map<String, Object?> json) async {
+    final fake = debugPost;
+    if (fake != null) return fake(url, json);
     final client = HttpClient()..connectionTimeout = const Duration(seconds: 8);
     try {
       final req = await client.postUrl(Uri.parse(url));
@@ -172,6 +196,9 @@ class LavkaUpdate {
     _email = null;
     _lastCheck = null;
     _inFlight = null;
+    _identityChanged = false;
+    debugIsAndroid = null;
+    debugPost = null;
     status.value = null;
   }
 }

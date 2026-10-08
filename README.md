@@ -26,7 +26,7 @@ dependencies:
   lavka_update:
     git:
       url: https://github.com/SoftImply-OU/lavka_update.git
-      ref: v0.2.1
+      ref: v0.2.2
 ```
 
 ```dart

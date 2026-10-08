@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lavka_update/lavka_update.dart';
@@ -22,6 +24,48 @@ void main() {
         builder: (context, child) => LavkaUpdateGate(child: child!),
         home: Scaffold(body: home),
       );
+
+  test('sign-in during the startup check is reported, not swallowed', () async {
+    final bodies = <Map<String, Object?>>[];
+    final first = Completer<Map<String, dynamic>>();
+    LavkaUpdate.debugIsAndroid = true;
+    LavkaUpdate.debugPost = (url, body) {
+      bodies.add(body);
+      return bodies.length == 1
+          ? first.future
+          : Future.value({'latest': {'versionCode': 45, 'versionName': '1.0.45'}, 'updateAvailable': false});
+    };
+
+    final startup = LavkaUpdate.check(); // cold start: no user yet
+    await pumpEventQueue();
+    expect(bodies, hasLength(1));
+    expect(bodies.single.containsKey('email'), isFalse);
+
+    LavkaUpdate.setUser('p@softimply.ee'); // auth restored mid-flight
+    first.complete({'latest': null, 'updateAvailable': false});
+    await startup;
+    await pumpEventQueue();
+
+    expect(bodies, hasLength(2));
+    expect(bodies.last['email'], 'p@softimply.ee');
+  });
+
+  test('sign-in when idle reports immediately, despite the throttle', () async {
+    final bodies = <Map<String, Object?>>[];
+    LavkaUpdate.debugIsAndroid = true;
+    LavkaUpdate.debugPost = (url, body) async {
+      bodies.add(body);
+      return {'latest': null, 'updateAvailable': false};
+    };
+    await LavkaUpdate.check();
+    LavkaUpdate.setUser('p@softimply.ee');
+    await pumpEventQueue();
+    expect(bodies.map((b) => b['email']), [null, 'p@softimply.ee']);
+    // Same user again: nothing new to report.
+    LavkaUpdate.setUser('p@softimply.ee');
+    await pumpEventQueue();
+    expect(bodies, hasLength(2));
+  });
 
   test('versionLabel drops the bracket when the name ends in the build', () {
     expect(versionLabel('1.0.47', 47), '1.0.47');

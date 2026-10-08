@@ -1,6 +1,6 @@
 name: lavka_update
 description: In-app update check and version display for SoftImply's Android apps, distributed through Lavka.
-version: 0.2.0
+version: 0.2.1
 publish_to: none
 repository: https://github.com/SoftImply-OU/lavka_update
 

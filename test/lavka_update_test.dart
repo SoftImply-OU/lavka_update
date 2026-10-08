@@ -23,6 +23,12 @@ void main() {
         home: Scaffold(body: home),
       );
 
+  test('versionLabel drops the bracket when the name ends in the build', () {
+    expect(versionLabel('1.0.47', 47), '1.0.47');
+    expect(versionLabel('1.0.0', 45), '1.0.0 (45)');
+    expect(versionLabel('1.47', 47), '1.47');
+  });
+
   testWidgets('version tile shows this build', (tester) async {
     await tester.pumpWidget(app(const LavkaVersionTile()));
     await tester.pumpAndSettle();

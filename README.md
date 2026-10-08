@@ -8,7 +8,8 @@ distributed through [Lavka](https://lavka.softimply.tech), our internal app stor
   slides in at the bottom: *Update* opens the app's Lavka page in the browser
   (Microsoft sign-in, then Install), *Later* hides it until the next build.
 - **Version display.** `LavkaVersionTile` for a settings screen,
-  `LavkaVersionText` for a footer: `1.0.0 (45)` plus "update available".
+  `LavkaVersionText` for a footer: `1.0.47` (or `1.0.0 (45)` for builds
+  whose version doesn't end in the build number) plus "update available".
 - **Open from Lavka.** An invisible activity accepts
   `intent://open#Intent;scheme=lavka-open;package=<app id>;end`, so Lavka's
   *Open* button can start the app from Chrome. It only brings the app to the
@@ -25,7 +26,7 @@ dependencies:
   lavka_update:
     git:
       url: https://github.com/SoftImply-OU/lavka_update.git
-      ref: v0.2.0
+      ref: v0.2.1
 ```
 
 ```dart

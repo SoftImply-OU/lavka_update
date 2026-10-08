@@ -33,11 +33,17 @@ class LavkaUpdateStatus {
   /// The app's page in Lavka, where the user installs the update.
   final String? pageUrl;
 
-  /// `1.0.0 (45)`
-  String get label => '$versionName ($versionCode)';
+  /// `1.0.47` when the version already ends in the build number (CI builds
+  /// `major.minor.<build>`), otherwise `1.0.0 (45)`.
+  String get label => versionLabel(versionName, versionCode);
   String? get latestLabel =>
-      latestVersionCode == null ? null : '$latestVersionName ($latestVersionCode)';
+      latestVersionCode == null ? null : versionLabel(latestVersionName ?? '$latestVersionCode', latestVersionCode!);
 }
+
+/// `1.0.47`, or `1.0.0 (45)` for builds whose name doesn't carry the build
+/// number. Kept in step with Lavka's `versionLabel` (src/lib/format.ts).
+String versionLabel(String name, int code) =>
+    name.split('.').last == '$code' ? name : '$name ($code)';
 
 /// Talks to Lavka's public `/api/updates/<appId>` endpoint. It sends this
 /// build's version, the signed-in user's email (if set) and a random install

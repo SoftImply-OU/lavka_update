@@ -16,5 +16,5 @@
 /// ```
 library;
 
-export 'src/client.dart' show LavkaUpdate, LavkaUpdateStatus;
+export 'src/client.dart' show LavkaUpdate, LavkaUpdateStatus, versionLabel;
 export 'src/widgets.dart' show LavkaUpdateGate, LavkaVersionTile, LavkaVersionText;

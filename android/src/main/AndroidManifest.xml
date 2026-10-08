@@ -1,0 +1,28 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!--
+          Lets Lavka's "Open" button start the app from Chrome:
+          intent://open#Intent;scheme=lavka-open;package=<app id>;end
+          Chrome only starts activities that accept BROWSABLE intents, and a
+          Flutter MainActivity doesn't, so this invisible one does and hands
+          over to the app's normal launch intent. It carries no data and
+          opens no screen inside the app; `package=` in Lavka's link makes
+          sure only the intended app answers, though every app with
+          lavka_update declares the same filter.
+        -->
+        <activity
+            android:name="ee.softimply.lavka_update.LavkaOpenActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="lavka-open" android:host="open" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

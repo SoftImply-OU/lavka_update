@@ -9,6 +9,11 @@ distributed through [Lavka](https://lavka.softimply.tech), our internal app stor
   (Microsoft sign-in, then Install), *Later* hides it until the next build.
 - **Version display.** `LavkaVersionTile` for a settings screen,
   `LavkaVersionText` for a footer: `1.0.0 (45)` plus "update available".
+- **Open from Lavka.** An invisible activity accepts
+  `intent://open#Intent;scheme=lavka-open;package=<app id>;end`, so Lavka's
+  *Open* button can start the app from Chrome. It only brings the app to the
+  front; it carries no data. (Chrome only starts activities that accept
+  BROWSABLE intents, and a Flutter `MainActivity` doesn't.)
 - **Who runs what.** Each check reports this build's version, the signed-in
   user's email (if the app sets it) and a random install id, so Lavka's app
   page lists who is behind.
@@ -20,7 +25,7 @@ dependencies:
   lavka_update:
     git:
       url: https://github.com/SoftImply-OU/lavka_update.git
-      ref: v0.1.0
+      ref: v0.2.0
 ```
 
 ```dart
